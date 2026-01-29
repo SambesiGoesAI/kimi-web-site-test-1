@@ -143,7 +143,7 @@ const Courses = () => {
     <section
       id="courses"
       ref={sectionRef}
-      className="relative w-full py-20 lg:py-32 bg-white overflow-hidden"
+      className="relative w-full py-20 lg:py-32 bg-trainex-bg-gray overflow-hidden"
     >
       <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
         {/* Header */}
@@ -194,10 +194,10 @@ const Courses = () => {
                   alt={course.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-trainex-black/50 to-transparent" />
                 
                 {/* Category badge */}
-                <span className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-xs font-semibold text-black rounded-full">
+                <span className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-xs font-semibold text-trainex-black rounded-full">
                   {course.category}
                 </span>
 
@@ -216,7 +216,7 @@ const Courses = () => {
 
               {/* Content */}
               <div className="p-5">
-                <h3 className="text-lg font-semibold text-black mb-2 line-clamp-2 group-hover:text-trainex-orange transition-colors duration-300">
+                <h3 className="text-lg font-semibold text-trainex-black mb-2 line-clamp-2 group-hover:text-trainex-orange transition-colors duration-300">
                   {course.title}
                 </h3>
 
@@ -226,7 +226,7 @@ const Courses = () => {
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-semibold text-black">{course.rating}</span>
+                    <span className="text-sm font-semibold text-trainex-black">{course.rating}</span>
                   </div>
                   <span className="text-sm text-trainex-light-gray">
                     ({course.reviews.toLocaleString()} reviews)
@@ -248,7 +248,7 @@ const Courses = () => {
 
               {/* Enroll button */}
               <div className="px-5 pb-5">
-                <button className="w-full py-3 bg-trainex-bg-gray text-black font-semibold rounded-xl transition-all duration-300 group-hover:bg-trainex-orange group-hover:text-white flex items-center justify-center gap-2">
+                <button className="w-full py-3 bg-trainex-bg-gray text-trainex-black font-semibold rounded-xl transition-all duration-300 group-hover:bg-trainex-orange group-hover:text-trainex-white flex items-center justify-center gap-2">
                   Enroll Now
                   <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </button>

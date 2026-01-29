@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, Clock, Calendar } from 'lucide-react';
@@ -63,6 +63,13 @@ const blogPosts: BlogPost[] = [
 
 const Blog = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const [featuredId, setFeaturedId] = useState(() => {
+    const initial = blogPosts.find((post) => post.featured);
+    return initial ? initial.id : blogPosts[0]?.id ?? 0;
+  });
+  const [isSwapping, setIsSwapping] = useState(false);
+  const featuredRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -139,8 +146,114 @@ const Blog = () => {
     return () => ctx.revert();
   }, []);
 
-  const featuredPost = blogPosts.find((post) => post.featured);
-  const regularPosts = blogPosts.filter((post) => !post.featured);
+  const featuredPost = blogPosts.find((post) => post.id === featuredId) ?? blogPosts[0];
+  const regularPosts = blogPosts.filter((post) => post.id !== featuredPost.id);
+
+  const setCardRef = (id: number) => (el: HTMLDivElement | null) => {
+    if (el) {
+      cardRefs.current.set(id, el);
+    } else {
+      cardRefs.current.delete(id);
+    }
+  };
+
+  const createClone = (element: HTMLElement, rect: DOMRect) => {
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.style.position = 'fixed';
+    clone.style.top = `${rect.top}px`;
+    clone.style.left = `${rect.left}px`;
+    clone.style.width = `${rect.width}px`;
+    clone.style.height = `${rect.height}px`;
+    clone.style.margin = '0';
+    clone.style.transformOrigin = 'top left';
+    clone.style.zIndex = '1000';
+    clone.style.pointerEvents = 'none';
+    clone.style.transition = 'none';
+    return clone;
+  };
+
+  const swapFeatured = (targetId: number) => {
+    if (isSwapping || targetId === featuredId) return;
+    const fromFeaturedEl = featuredRef.current;
+    const fromSmallEl = cardRefs.current.get(targetId);
+    if (!fromFeaturedEl || !fromSmallEl) {
+      setFeaturedId(targetId);
+      return;
+    }
+
+    const prevFeaturedId = featuredId;
+    const fromFeaturedRect = fromFeaturedEl.getBoundingClientRect();
+    const fromSmallRect = fromSmallEl.getBoundingClientRect();
+
+    const featuredClone = createClone(fromFeaturedEl, fromFeaturedRect);
+    const smallClone = createClone(fromSmallEl, fromSmallRect);
+
+    document.body.appendChild(featuredClone);
+    document.body.appendChild(smallClone);
+
+    fromFeaturedEl.style.visibility = 'hidden';
+    fromSmallEl.style.visibility = 'hidden';
+
+    setIsSwapping(true);
+    setFeaturedId(targetId);
+
+    requestAnimationFrame(() => {
+      const toFeaturedEl = featuredRef.current;
+      const toSmallEl = cardRefs.current.get(prevFeaturedId);
+      if (!toFeaturedEl || !toSmallEl) {
+        featuredClone.remove();
+        smallClone.remove();
+        fromFeaturedEl.style.visibility = '';
+        fromSmallEl.style.visibility = '';
+        setIsSwapping(false);
+        return;
+      }
+
+      const toFeaturedRect = toFeaturedEl.getBoundingClientRect();
+      const toSmallRect = toSmallEl.getBoundingClientRect();
+
+      const duration = 520;
+      const easing = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+      const featuredAnim = featuredClone.animate(
+        [
+          { transform: 'translate(0px, 0px) scale(1)', opacity: 1 },
+          {
+            transform: `translate(${toSmallRect.left - fromFeaturedRect.left}px, ${
+              toSmallRect.top - fromFeaturedRect.top
+            }px) scale(${toSmallRect.width / fromFeaturedRect.width}, ${
+              toSmallRect.height / fromFeaturedRect.height
+            })`,
+            opacity: 0.2,
+          },
+        ],
+        { duration, easing, fill: 'forwards' }
+      );
+
+      const smallAnim = smallClone.animate(
+        [
+          { transform: 'translate(0px, 0px) scale(1)', opacity: 1 },
+          {
+            transform: `translate(${toFeaturedRect.left - fromSmallRect.left}px, ${
+              toFeaturedRect.top - fromSmallRect.top
+            }px) scale(${toFeaturedRect.width / fromSmallRect.width}, ${
+              toFeaturedRect.height / fromSmallRect.height
+            })`,
+            opacity: 1,
+          },
+        ],
+        { duration, easing, fill: 'forwards' }
+      );
+
+      Promise.all([featuredAnim.finished, smallAnim.finished]).then(() => {
+        featuredClone.remove();
+        smallClone.remove();
+        toFeaturedEl.style.visibility = '';
+        toSmallEl.style.visibility = '';
+        setIsSwapping(false);
+      });
+    });
+  };
 
   return (
     <section
@@ -168,21 +281,24 @@ const Blog = () => {
         <div className="blog-grid grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Featured Post */}
           {featuredPost && (
-            <div className="blog-featured group relative bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-500 cursor-pointer lg:row-span-2">
+            <div
+              key={featuredPost.id}
+              ref={featuredRef}
+              data-post-id={featuredPost.id}
+              className="blog-featured group relative bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-500 cursor-pointer lg:row-span-2"
+            >
               <div className="relative h-64 lg:h-80 overflow-hidden">
                 <img
                   src={featuredPost.image}
                   alt={featuredPost.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                
-                {/* Category badge */}
+                <div className="absolute inset-0 bg-gradient-to-t from-trainex-black/60 to-transparent" />
+
                 <span className="absolute top-4 left-4 px-3 py-1 bg-trainex-orange text-white text-xs font-semibold rounded-full">
                   {featuredPost.category}
                 </span>
 
-                {/* Content overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <h3 className="text-xl lg:text-2xl font-semibold text-white mb-3 group-hover:text-trainex-orange transition-colors duration-300">
                     {featuredPost.title}
@@ -210,7 +326,20 @@ const Blog = () => {
             {regularPosts.map((post) => (
               <div
                 key={post.id}
-                className="blog-card group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-500 cursor-pointer"
+                ref={setCardRef(post.id)}
+                data-post-id={post.id}
+                className={`blog-card group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-500 cursor-pointer ${
+                  isSwapping ? 'pointer-events-none' : ''
+                }`}
+                onClick={() => swapFeatured(post.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    swapFeatured(post.id);
+                  }
+                }}
               >
                 <div className="relative h-40 overflow-hidden">
                   <img
@@ -218,16 +347,16 @@ const Blog = () => {
                     alt={post.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-trainex-black/30 to-transparent" />
                   
                   {/* Category badge */}
-                  <span className="absolute top-3 left-3 px-2 py-1 bg-white/90 backdrop-blur-sm text-xs font-semibold text-black rounded-full">
+                  <span className="absolute top-3 left-3 px-2 py-1 bg-white/90 backdrop-blur-sm text-xs font-semibold text-trainex-black rounded-full">
                     {post.category}
                   </span>
                 </div>
 
                 <div className="p-5">
-                  <h3 className="text-base font-semibold text-black mb-3 line-clamp-2 group-hover:text-trainex-orange transition-colors duration-300">
+                  <h3 className="text-base font-semibold text-trainex-black mb-3 line-clamp-2 group-hover:text-trainex-orange transition-colors duration-300">
                     {post.title}
                   </h3>
 

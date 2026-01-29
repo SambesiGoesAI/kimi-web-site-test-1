@@ -170,10 +170,10 @@ const Footer = () => {
     <footer
       id="footer"
       ref={footerRef}
-      className="relative w-full bg-black text-white overflow-hidden"
+      className="relative w-full bg-trainex-black text-white overflow-hidden"
     >
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black to-gray-900" />
+      <div className="absolute inset-0 bg-gradient-to-b from-trainex-black to-trainex-black/90" />
 
       <div className="relative w-full px-4 sm:px-6 lg:px-12 xl:px-20 py-16 lg:py-20">
         {/* Main grid */}
@@ -283,7 +283,7 @@ const Footer = () => {
               />
               <button
                 type="submit"
-                className="px-6 py-3 bg-trainex-orange text-white font-semibold rounded-xl transition-all duration-300 hover:bg-white hover:text-black flex items-center gap-2"
+                className="px-6 py-3 bg-trainex-orange text-trainex-white font-semibold rounded-xl transition-all duration-300 hover:bg-trainex-white hover:text-trainex-black flex items-center gap-2"
               >
                 Subscribe
                 <ArrowRight className="w-4 h-4" />

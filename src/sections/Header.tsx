@@ -54,7 +54,7 @@ const Header = () => {
             <div className="w-10 h-10 bg-trainex-orange rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">T</span>
             </div>
-            <span className="text-xl font-bold text-black">Trainex</span>
+            <span className="text-xl font-bold text-trainex-black">Trainex</span>
           </a>
 
           {/* Desktop Navigation */}
@@ -67,7 +67,7 @@ const Header = () => {
                   e.preventDefault();
                   scrollToSection(link.href);
                 }}
-                className="relative text-sm font-medium text-black hover:text-trainex-orange transition-colors duration-300 group"
+                className="relative text-sm font-medium text-trainex-black hover:text-trainex-orange transition-colors duration-300 group"
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-trainex-orange transition-all duration-300 group-hover:w-full group-hover:left-0" />
@@ -77,7 +77,7 @@ const Header = () => {
 
           {/* Actions */}
           <div className="hidden lg:flex items-center gap-4">
-            <button className="relative p-2 text-black hover:text-trainex-orange transition-colors duration-300">
+            <button className="relative p-2 text-trainex-black hover:text-trainex-orange transition-colors duration-300">
               <ShoppingCart className="w-5 h-5" />
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-trainex-orange text-white text-xs rounded-full flex items-center justify-center">
                 0
@@ -97,7 +97,7 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2 text-black"
+            className="lg:hidden p-2 text-trainex-black"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -119,7 +119,7 @@ const Header = () => {
                   e.preventDefault();
                   scrollToSection(link.href);
                 }}
-                className="text-base font-medium text-black hover:text-trainex-orange transition-colors duration-300"
+                className="text-base font-medium text-trainex-black hover:text-trainex-orange transition-colors duration-300"
               >
                 {link.name}
               </a>

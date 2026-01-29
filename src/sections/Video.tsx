@@ -117,7 +117,7 @@ const Video = () => {
     <section
       id="video"
       ref={sectionRef}
-      className="relative w-full py-20 lg:py-32 bg-black overflow-hidden"
+      className="relative w-full py-20 lg:py-32 bg-trainex-black overflow-hidden"
     >
       {/* Particle background */}
       <div className="absolute inset-0 overflow-hidden">
@@ -145,7 +145,7 @@ const Video = () => {
         >
           <path
             d="M0 0L60 10C120 20 240 40 360 45C480 50 600 50 720 45C840 40 960 30 1080 25C1200 20 1320 20 1380 20L1440 20V0H1380C1320 0 1200 0 1080 0C960 0 840 0 720 0C600 0 480 0 360 0C240 0 120 0 60 0H0Z"
-            fill="white"
+            fill="#ece2d0"
           />
         </svg>
       </div>
@@ -173,7 +173,7 @@ const Video = () => {
               alt="Video thumbnail"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-trainex-black/40" />
 
             {/* Play button */}
             <button
@@ -208,7 +208,7 @@ const Video = () => {
         >
           <path
             d="M0 60L60 50C120 40 240 20 360 15C480 10 600 10 720 15C840 20 960 30 1080 35C1200 40 1320 40 1380 40L1440 40V60H1380C1320 60 1200 60 1080 60C960 60 840 60 720 60C600 60 480 60 360 60C240 60 120 60 60 60H0Z"
-            fill="white"
+            fill="#ece2d0"
           />
         </svg>
       </div>
@@ -216,7 +216,7 @@ const Video = () => {
       {/* Video Modal */}
       {isPlaying && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-trainex-black/90 backdrop-blur-sm"
           onClick={() => setIsPlaying(false)}
         >
           <div className="relative w-full max-w-5xl mx-4">
@@ -226,7 +226,7 @@ const Video = () => {
             >
               <X className="w-8 h-8" />
             </button>
-            <div className="aspect-video bg-black rounded-2xl overflow-hidden">
+            <div className="aspect-video bg-trainex-black rounded-2xl overflow-hidden">
               <iframe
                 width="100%"
                 height="100%"

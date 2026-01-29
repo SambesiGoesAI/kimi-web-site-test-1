@@ -236,7 +236,7 @@ const About = () => {
                     <div className="w-10 h-10 bg-trainex-orange/10 rounded-lg flex items-center justify-center mx-auto mb-2">
                       <stat.icon className="w-5 h-5 text-trainex-orange" />
                     </div>
-                    <p className="text-xl font-bold text-black">{stat.value}</p>
+                    <p className="text-xl font-bold text-trainex-black">{stat.value}</p>
                     <p className="text-xs text-trainex-gray">{stat.label}</p>
                   </div>
                 ))}

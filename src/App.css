@@ -18,13 +18,13 @@ html {
 
 /* Custom selection color */
 ::selection {
-  background-color: rgba(255, 77, 36, 0.2);
+  background-color: rgba(229, 99, 153, 0.2);
   color: inherit;
 }
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid #ff4d24;
+  outline: 2px solid var(--trainex-orange);
   outline-offset: 2px;
 }
 
@@ -108,7 +108,7 @@ html {
   left: 0;
   width: 0;
   height: 2px;
-  background-color: #ff4d24;
+  background-color: var(--trainex-orange);
   transition: width 0.3s ease;
 }
 
@@ -118,7 +118,7 @@ html {
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #ff4d24 0%, #ff7a5c 50%, #ff4d24 100%);
+  background: linear-gradient(135deg, #e56399 0%, #7fd1b9 50%, #e56399 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -161,8 +161,8 @@ html {
 
 /* Loading spinner */
 .spinner {
-  border: 3px solid rgba(255, 77, 36, 0.2);
-  border-top-color: #ff4d24;
+  border: 3px solid rgba(229, 99, 153, 0.2);
+  border-top-color: #e56399;
   border-radius: 50%;
   width: 40px;
   height: 40px;

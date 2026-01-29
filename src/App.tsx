@@ -39,10 +39,10 @@ function App() {
       <Header />
       <main>
         <Hero />
+        <Testimonials />
         <About />
         <Courses />
         <Video />
-        <Testimonials />
         <Blog />
         <CTA />
       </main>

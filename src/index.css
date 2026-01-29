@@ -6,35 +6,35 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    --primary: 11 100% 57%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 29%;
-    --accent: 11 100% 57%;
-    --accent-foreground: 0 0% 100%;
+    --background: 23 46% 68%;
+    --foreground: 5 10% 43%;
+    --card: 39 42% 87%;
+    --card-foreground: 5 10% 43%;
+    --popover: 39 42% 87%;
+    --popover-foreground: 5 10% 43%;
+    --primary: 335 71% 64%;
+    --primary-foreground: 39 42% 87%;
+    --secondary: 23 46% 68%;
+    --secondary-foreground: 5 10% 43%;
+    --muted: 23 46% 68%;
+    --muted-foreground: 5 10% 43%;
+    --accent: 162 47% 66%;
+    --accent-foreground: 5 10% 43%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 91%;
-    --input: 0 0% 91%;
-    --ring: 11 100% 57%;
+    --border: 23 46% 68%;
+    --input: 23 46% 68%;
+    --ring: 335 71% 64%;
     --radius: 0.625rem;
     
     /* Custom Colors */
-    --trainex-orange: #ff4d24;
-    --trainex-black: #000000;
-    --trainex-white: #ffffff;
-    --trainex-gray: #4a4949;
-    --trainex-light-gray: #bfbfbf;
-    --trainex-border-gray: #e7e7e7;
-    --trainex-bg-gray: #f3f3f3;
+    --trainex-orange: #e56399;
+    --trainex-black: #7a6563;
+    --trainex-white: #ece2d0;
+    --trainex-gray: #7a6563;
+    --trainex-light-gray: #d3a588;
+    --trainex-border-gray: #d3a588;
+    --trainex-bg-gray: #d3a588;
     
     /* Animation Easings */
     --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -70,32 +70,32 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#ff4d24] text-white font-semibold rounded-full transition-all duration-300;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-trainex-orange text-trainex-white font-semibold rounded-full transition-all duration-300;
   }
   
   .btn-primary:hover {
     @apply scale-105 shadow-lg;
-    box-shadow: 0 10px 40px rgba(255, 77, 36, 0.4);
+    box-shadow: 0 10px 40px rgba(229, 99, 153, 0.4);
   }
   
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-black text-black font-semibold rounded-full transition-all duration-300 bg-transparent;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-trainex-black text-trainex-black font-semibold rounded-full transition-all duration-300 bg-transparent;
   }
   
   .btn-secondary:hover {
-    @apply border-[#ff4d24] text-[#ff4d24];
+    @apply border-trainex-orange text-trainex-orange;
   }
   
   .section-label {
-    @apply text-sm font-semibold uppercase tracking-wider text-[#ff4d24] mb-4;
+    @apply text-sm font-semibold uppercase tracking-wider text-trainex-orange mb-4;
   }
   
   .section-title {
-    @apply text-4xl md:text-5xl lg:text-6xl font-semibold text-black leading-tight;
+    @apply text-4xl md:text-5xl lg:text-6xl font-semibold text-trainex-black leading-tight;
   }
   
   .section-description {
-    @apply text-lg text-[#4a4949] leading-relaxed;
+    @apply text-lg text-trainex-gray leading-relaxed;
   }
 }
 
@@ -121,7 +121,7 @@
   }
   
   .gradient-mesh {
-    background: linear-gradient(135deg, rgba(255, 77, 36, 0.1) 0%, rgba(255, 150, 100, 0.05) 50%, rgba(255, 77, 36, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(229, 99, 153, 0.14) 0%, rgba(127, 209, 185, 0.1) 50%, rgba(229, 99, 153, 0.12) 100%);
     background-size: 400% 400%;
     animation: gradient-shift 20s ease infinite;
   }
@@ -129,11 +129,11 @@
   .glass-effect {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(236, 226, 208, 0.95);
   }
   
   .text-gradient {
-    background: linear-gradient(135deg, #ff4d24 0%, #ff7a5c 100%);
+    background: linear-gradient(135deg, #e56399 0%, #7fd1b9 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -293,16 +293,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f3f3;
+  background: #ece2d0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #bfbfbf;
+  background: #d3a588;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff4d24;
+  background: #e56399;
 }
 
 /* Reduced motion */

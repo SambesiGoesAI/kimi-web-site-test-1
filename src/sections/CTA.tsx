@@ -163,10 +163,10 @@ const CTA = () => {
         {/* Left side - Content */}
         <div
           ref={leftRef}
-          className="relative bg-white py-12 lg:py-20 px-4 sm:px-6 lg:px-12 xl:px-20 flex items-center"
+          className="relative bg-trainex-bg-gray py-12 lg:py-20 px-4 sm:px-6 lg:px-12 xl:px-20 flex items-center"
         >
           <div className="max-w-xl">
-            <h2 className="cta-headline text-3xl sm:text-4xl lg:text-5xl font-semibold text-black mb-6 leading-tight">
+            <h2 className="cta-headline text-3xl sm:text-4xl lg:text-5xl font-semibold text-trainex-black mb-6 leading-tight">
               {'Ready to Start Your Learning Journey?'.split(' ').map((word, i) => (
                 <span key={i} className="inline-block mr-2">
                   {word}
@@ -223,12 +223,12 @@ const CTA = () => {
               alt="Join Trainex"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-trainex-black/40" />
           </div>
 
           {/* Diagonal divider */}
           <div
-            className="absolute top-0 left-0 w-20 h-full bg-white"
+            className="absolute top-0 left-0 w-20 h-full bg-trainex-white"
             style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
           />
         </div>

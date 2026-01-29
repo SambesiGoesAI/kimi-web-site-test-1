@@ -175,7 +175,7 @@ const Testimonials = () => {
     <section
       id="testimonials"
       ref={sectionRef}
-      className="relative w-full py-20 lg:py-32 bg-white overflow-hidden"
+      className="relative w-full pt-12 pb-20 lg:pt-20 lg:pb-28 bg-trainex-bg-gray overflow-hidden"
     >
       <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-20">
         {/* Header */}
@@ -206,7 +206,7 @@ const Testimonials = () => {
                     : undefined,
                 border:
                   hoveredCard === testimonial.id
-                    ? '2px solid #ff4d24'
+                    ? '2px solid var(--trainex-orange)'
                     : '2px solid transparent',
               }}
               onMouseEnter={() => setHoveredCard(testimonial.id)}
@@ -251,7 +251,7 @@ const Testimonials = () => {
                   />
                 </div>
                 <div>
-                  <p className="font-semibold text-black">{testimonial.name}</p>
+                  <p className="font-semibold text-trainex-black">{testimonial.name}</p>
                   <p className="text-sm text-trainex-gray">{testimonial.role}</p>
                 </div>
               </div>

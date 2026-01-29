@@ -134,7 +134,7 @@ const Hero = () => {
     <section
       id="hero"
       ref={heroRef}
-      className="relative min-h-screen w-full overflow-hidden bg-white pt-20"
+      className="relative min-h-screen w-full overflow-hidden bg-trainex-bg-gray pt-20"
     >
       {/* Gradient mesh background */}
       <div className="absolute inset-0 gradient-mesh opacity-30" />
@@ -150,7 +150,7 @@ const Hero = () => {
           {/* Content */}
           <div className="relative z-10 max-w-2xl">
             <div ref={headlineRef} className="mb-6">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-semibold text-black leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-semibold text-trainex-black leading-tight">
                 <span className="headline-line block">Unlock Your</span>
                 <span className="headline-line block">Potential With</span>
                 <span className="headline-line block text-gradient">Expert Training</span>
@@ -186,7 +186,7 @@ const Hero = () => {
                   <BookOpen className="w-6 h-6 text-trainex-orange" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-black">500+</p>
+                  <p className="text-2xl font-bold text-trainex-black">500+</p>
                   <p className="text-sm text-trainex-gray">Courses</p>
                 </div>
               </div>
@@ -195,7 +195,7 @@ const Hero = () => {
                   <Users className="w-6 h-6 text-trainex-orange" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-black">50K+</p>
+                  <p className="text-2xl font-bold text-trainex-black">50K+</p>
                   <p className="text-sm text-trainex-gray">Students</p>
                 </div>
               </div>
@@ -204,7 +204,7 @@ const Hero = () => {
                   <Award className="w-6 h-6 text-trainex-orange" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-black">98%</p>
+                  <p className="text-2xl font-bold text-trainex-black">98%</p>
                   <p className="text-sm text-trainex-gray">Satisfaction</p>
                 </div>
               </div>
@@ -224,7 +224,7 @@ const Hero = () => {
                 className="w-full h-auto object-cover"
               />
               {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-trainex-black/20 to-transparent" />
             </div>
 
             {/* Rotating badge */}
@@ -242,7 +242,7 @@ const Hero = () => {
             <div className="absolute -top-4 -right-4 w-16 h-16 bg-trainex-bg-gray rounded-2xl flex items-center justify-center shadow-lg animate-float">
               <span className="text-2xl">🎯</span>
             </div>
-            <div className="absolute top-1/2 -right-8 w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg animate-float" style={{ animationDelay: '2s' }}>
+            <div className="absolute top-1/2 -right-8 w-12 h-12 bg-trainex-white rounded-xl flex items-center justify-center shadow-lg animate-float" style={{ animationDelay: '2s' }}>
               <span className="text-xl">📚</span>
             </div>
           </div>
@@ -259,7 +259,7 @@ const Hero = () => {
         >
           <path
             d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-            fill="#f3f3f3"
+            fill="#ece2d0"
           />
         </svg>
       </div>
