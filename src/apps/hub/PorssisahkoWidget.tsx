@@ -297,7 +297,7 @@ export default function PorssisahkoWidget() {
             Hinnat keskiyöhön
           </div>
           <div className="relative">
-            <div className="flex items-end gap-[2px] h-32">
+            <div className="flex gap-[2px] h-32">
               {upcoming.map((p, i) => {
                 const cents = toCents(p.PriceWithTax);
                 // Use relative scaling (min-to-max) so price differences are visible
@@ -310,19 +310,21 @@ export default function PorssisahkoWidget() {
                   i < cheapest.startIndex + 4;
                 const isLast = i === upcoming.length - 1;
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                    <span className="text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div key={i} className="flex-1 flex flex-col items-center group relative">
+                    <span className="text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       {cents.toFixed(1)}
                     </span>
-                    <div
-                      className={`w-full rounded-sm transition-all group-hover:opacity-80 ${
-                        isCheapest
-                          ? 'bg-green-400 ring-1 ring-green-400/50'
-                          : priceBarColor(cents)
-                      }`}
-                      style={{ height: `${height}%` }}
-                    />
-                    <span className="text-[10px] text-zinc-600">
+                    <div className="flex-1 w-full flex items-end">
+                      <div
+                        className={`w-full rounded-sm transition-all group-hover:opacity-80 ${
+                          isCheapest
+                            ? 'bg-green-400 ring-1 ring-green-400/50'
+                            : priceBarColor(cents)
+                        }`}
+                        style={{ height: `${height}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-zinc-600 shrink-0">
                       {i % 4 === 0 ? formatHour(p.DateTime) : isLast ? '00:00' : ''}
                     </span>
                   </div>
