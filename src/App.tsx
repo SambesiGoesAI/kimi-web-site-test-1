@@ -1,53 +1,20 @@
-import { useEffect } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Header from './sections/Header';
-import Hero from './sections/Hero';
-import About from './sections/About';
-import Courses from './sections/Courses';
-import Video from './sections/Video';
-import Testimonials from './sections/Testimonials';
-import Blog from './sections/Blog';
-import CTA from './sections/CTA';
-import Footer from './sections/Footer';
-import './App.css';
+import { lazy, Suspense } from 'react';
 
-gsap.registerPlugin(ScrollTrigger);
+const HubApp = lazy(() => import('./apps/hub/HubApp'));
+const TrainexApp = lazy(() => import('./apps/trainex/TrainexApp'));
+
+function getActiveApp(): 'hub' | 'trainex' {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('app') === 'trainex' ? 'trainex' : 'hub';
+}
 
 function App() {
-  useEffect(() => {
-    // Initialize scroll reveal animations
-    const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
-    
-    revealElements.forEach((element) => {
-      ScrollTrigger.create({
-        trigger: element,
-        start: 'top 85%',
-        onEnter: () => element.classList.add('active'),
-        once: true,
-      });
-    });
-
-    // Cleanup
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    };
-  }, []);
+  const activeApp = getActiveApp();
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
-      <Header />
-      <main>
-        <Hero />
-        <Testimonials />
-        <About />
-        <Courses />
-        <Video />
-        <Blog />
-        <CTA />
-      </main>
-      <Footer />
-    </div>
+    <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+      {activeApp === 'trainex' ? <TrainexApp /> : <HubApp />}
+    </Suspense>
   );
 }
 
