@@ -302,7 +302,6 @@ export default function PorssisahkoWidget() {
         // Calculate nice Y-axis scale
         const yAxisSteps = 4;
         const step = Math.ceil(maxCents / yAxisSteps / 5) * 5; // Round to nearest 5
-        const yMax = step * yAxisSteps;
         const gridLines = Array.from({ length: yAxisSteps + 1 }, (_, i) => i * step);
 
         const barW = 14; // w-3.5 = 14px
