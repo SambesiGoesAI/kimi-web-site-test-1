@@ -23,12 +23,18 @@ function getCurrentPrice(prices: SpotPrice[]): SpotPrice | null {
   return null;
 }
 
-function getUpcomingPrices(prices: SpotPrice[], count: number): SpotPrice[] {
+function getUpcomingPricesUntilMidnight(prices: SpotPrice[]): SpotPrice[] {
   const now = new Date();
+  // Calculate next midnight (00:00)
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0); // Next midnight
+
   return prices
-    .filter((p) => new Date(p.DateTime) >= now)
-    .sort((a, b) => new Date(a.DateTime).getTime() - new Date(b.DateTime).getTime())
-    .slice(0, count);
+    .filter((p) => {
+      const t = new Date(p.DateTime);
+      return t >= now && t < midnight;
+    })
+    .sort((a, b) => new Date(a.DateTime).getTime() - new Date(b.DateTime).getTime());
 }
 
 interface CheapestSlot {
@@ -36,6 +42,7 @@ interface CheapestSlot {
   avgCents: number;
   startTime: string;
   endTime: string;
+  slots: Array<{ time: string; cents: number }>;
 }
 
 function findCheapestHourSlot(upcoming: SpotPrice[]): CheapestSlot | null {
@@ -58,7 +65,11 @@ function findCheapestHourSlot(upcoming: SpotPrice[]): CheapestSlot | null {
   const end = new Date(
     new Date(upcoming[bestIdx + 3].DateTime).getTime() + 15 * 60 * 1000
   ).toISOString();
-  return { startIndex: bestIdx, avgCents: toCents(bestAvg), startTime: start, endTime: end };
+  const slots = [0, 1, 2, 3].map((offset) => ({
+    time: formatHour(upcoming[bestIdx + offset].DateTime),
+    cents: toCents(upcoming[bestIdx + offset].PriceWithTax),
+  }));
+  return { startIndex: bestIdx, avgCents: toCents(bestAvg), startTime: start, endTime: end, slots };
 }
 
 function formatHour(dateStr: string): string {
@@ -133,7 +144,7 @@ export default function PorssisahkoWidget() {
   }, [fetchPrices]);
 
   const current = prices.length > 0 ? getCurrentPrice(prices) : null;
-  const upcoming = prices.length > 0 ? getUpcomingPrices(prices, 24) : [];
+  const upcoming = prices.length > 0 ? getUpcomingPricesUntilMidnight(prices) : [];
   const maxCents = upcoming.length > 0
     ? Math.max(...upcoming.map((p) => Math.max(toCents(p.PriceWithTax), 1)))
     : 1;
@@ -142,11 +153,14 @@ export default function PorssisahkoWidget() {
   const cheapest = upcoming.length >= 4 ? findCheapestHourSlot(upcoming) : null;
   const countdown = useCountdown(cheapest?.startTime ?? null);
 
-  // Mini timeline: position of cheapest hour within the upcoming range
+  // Mini timeline: position of cheapest hour within the upcoming range (now → midnight)
   const timeline = useMemo(() => {
     if (!cheapest || upcoming.length === 0) return null;
     const rangeStart = new Date(upcoming[0].DateTime).getTime();
-    const rangeEnd = new Date(upcoming[upcoming.length - 1].DateTime).getTime() + 15 * 60 * 1000;
+    // End is midnight
+    const midnight = new Date(rangeStart);
+    midnight.setHours(24, 0, 0, 0);
+    const rangeEnd = midnight.getTime();
     const totalSpan = rangeEnd - rangeStart;
     if (totalSpan <= 0) return null;
     const slotStart = new Date(cheapest.startTime).getTime();
@@ -155,7 +169,7 @@ export default function PorssisahkoWidget() {
       leftPct: ((slotStart - rangeStart) / totalSpan) * 100,
       widthPct: ((slotEnd - slotStart) / totalSpan) * 100,
       rangeStartLabel: formatHour(upcoming[0].DateTime),
-      rangeEndLabel: formatHour(new Date(rangeEnd).toISOString()),
+      rangeEndLabel: '00:00',
     };
   }, [cheapest, upcoming]);
 
@@ -232,6 +246,18 @@ export default function PorssisahkoWidget() {
             {formatHour(cheapest.startTime)} – {formatHour(cheapest.endTime)}
           </div>
 
+          {/* 15-minute breakdown */}
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {cheapest.slots.map((slot, i) => (
+              <div key={i} className="text-center">
+                <div className="text-[10px] text-zinc-500">{slot.time}</div>
+                <div className={`text-sm font-semibold ${priceColor(slot.cents)}`}>
+                  {slot.cents.toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* Mini timeline bar */}
           {timeline && (
             <div className="mt-3">
@@ -265,7 +291,7 @@ export default function PorssisahkoWidget() {
       {upcoming.length > 0 && (
         <div>
           <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
-            Tulevat tunnit
+            Hinnat keskiyöhön
           </div>
           <div className="relative">
             <div className="flex items-end gap-[2px] h-32">
@@ -276,6 +302,7 @@ export default function PorssisahkoWidget() {
                   cheapest != null &&
                   i >= cheapest.startIndex &&
                   i < cheapest.startIndex + 4;
+                const isLast = i === upcoming.length - 1;
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
                     <span className="text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -290,7 +317,7 @@ export default function PorssisahkoWidget() {
                       style={{ height: `${height}%` }}
                     />
                     <span className="text-[10px] text-zinc-600">
-                      {i % 4 === 0 ? formatHour(p.DateTime) : ''}
+                      {i % 4 === 0 ? formatHour(p.DateTime) : isLast ? '00:00' : ''}
                     </span>
                   </div>
                 );
