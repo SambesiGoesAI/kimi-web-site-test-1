@@ -291,81 +291,140 @@ export default function PorssisahkoWidget() {
         </div>
       )}
 
-      {upcoming.length > 0 && (
-        <div>
-          <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
-            Hinnat keskiyöhön
-          </div>
-          <div className="overflow-x-auto">
-            <div className="relative inline-flex gap-[2px] pb-6">
-              {upcoming.map((p, i) => {
-                const cents = toCents(p.PriceWithTax);
-                const height = centRange > 0
-                  ? Math.max(((cents - minCents) / centRange) * 100, 4)
-                  : 50;
-                const isCheapest =
-                  cheapest != null &&
-                  i >= cheapest.startIndex &&
-                  i < cheapest.startIndex + 4;
-                const isLast = i === upcoming.length - 1;
-                return (
-                  <div key={i} className="w-2 flex flex-col items-center group relative">
-                    <span className="absolute -top-4 text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                      {cents.toFixed(2)}
-                    </span>
-                    <div className="h-28 w-full flex items-end">
-                      <div
-                        className={`w-full rounded-sm transition-all group-hover:opacity-80 ${
-                          isCheapest
-                            ? 'bg-green-400 ring-1 ring-green-400/50'
-                            : priceBarColor(cents)
-                        }`}
-                        style={{ height: `${height}%` }}
-                      />
-                    </div>
-                    <div className="h-4 flex items-center">
-                      <span className="text-[10px] text-zinc-600 whitespace-nowrap">
-                        {i % 4 === 0 ? formatHour(p.DateTime) : isLast ? '00:00' : ''}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+      {upcoming.length > 0 && (() => {
+        const now = new Date();
+        const currentBarIndex = upcoming.findIndex((p) => {
+          const start = new Date(p.DateTime);
+          const end = new Date(start.getTime() + 15 * 60 * 1000);
+          return now >= start && now < end;
+        });
 
-              {/* Chart connector bracket under cheapest bars */}
-              {cheapest && upcoming.length > 0 && (() => {
-                const barW = 8; // w-2 = 8px
-                const gap = 2;  // gap-[2px]
-                const step = barW + gap;
-                const left = cheapest.startIndex * step;
-                const width = 4 * barW + 3 * gap;
-                return (
-                  <div
-                    className="absolute flex flex-col items-center"
-                    style={{
-                      left: `${left}px`,
-                      width: `${width}px`,
-                      bottom: 0,
-                    }}
-                  >
-                    <div className="w-full flex items-center">
-                      <div className="h-[6px] w-px bg-green-400/60" />
-                      <div className="flex-1 border-b border-green-400/60" />
-                      <div className="h-[6px] w-px bg-green-400/60" />
+        // Calculate nice Y-axis scale
+        const yAxisSteps = 4;
+        const step = Math.ceil(maxCents / yAxisSteps / 5) * 5; // Round to nearest 5
+        const yMax = step * yAxisSteps;
+        const gridLines = Array.from({ length: yAxisSteps + 1 }, (_, i) => i * step);
+
+        const barW = 14; // w-3.5 = 14px
+        const gap = 2;
+        const barStep = barW + gap;
+
+        return (
+          <div>
+            <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
+              Hinnat keskiyöhön
+            </div>
+            <div className="overflow-x-auto">
+              <div className="relative inline-flex gap-1">
+                {/* Y-axis with grid lines */}
+                <div className="relative w-10 h-32 flex flex-col justify-between shrink-0 mr-1">
+                  {gridLines.reverse().map((value, i) => (
+                    <div key={i} className="flex items-center justify-end h-0">
+                      <span className="text-[9px] text-zinc-600 mr-1">{value}</span>
                     </div>
-                    <span className="text-[9px] text-green-400/70 mt-0.5 whitespace-nowrap">
-                      halvin
-                    </span>
+                  ))}
+                </div>
+
+                {/* Chart area */}
+                <div className="relative inline-flex pb-10">
+                  {/* Grid lines background */}
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none" style={{ height: '128px' }}>
+                    {gridLines.map((_, i) => (
+                      <div key={i} className="border-t border-zinc-800/50" />
+                    ))}
                   </div>
-                );
-              })()}
+
+                  {/* Bars */}
+                  <div className="relative inline-flex gap-[2px]">
+                    {upcoming.map((p, i) => {
+                      const cents = toCents(p.PriceWithTax);
+                      const height = centRange > 0
+                        ? Math.max(((cents - minCents) / centRange) * 100, 4)
+                        : 50;
+                      const isCheapest =
+                        cheapest != null &&
+                        i >= cheapest.startIndex &&
+                        i < cheapest.startIndex + 4;
+                      const isNow = i === currentBarIndex;
+                      const isLast = i === upcoming.length - 1;
+                      const showTimeLabel = i % 4 === 0 || isLast;
+
+                      return (
+                        <div key={i} className="w-3.5 flex flex-col items-center group relative">
+                          {/* Tooltip on hover */}
+                          <div className="absolute -top-14 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                            <div className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                              <div className="text-[11px] font-semibold text-white">{cents.toFixed(2)} snt</div>
+                              <div className="text-[9px] text-zinc-400">{formatHour(p.DateTime)}</div>
+                            </div>
+                          </div>
+
+                          {/* Current time indicator */}
+                          {isNow && (
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
+                              <div className="w-0.5 h-32 bg-blue-400/60" />
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-bold text-blue-400 whitespace-nowrap">
+                                NYT
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Bar */}
+                          <div className="h-32 w-full flex items-end">
+                            <div
+                              className={`w-full rounded-sm transition-all ${
+                                isCheapest
+                                  ? 'bg-green-400 ring-2 ring-green-400/60 ring-offset-1 ring-offset-zinc-900'
+                                  : priceBarColor(cents)
+                              } ${isNow ? 'ring-2 ring-blue-400/60' : ''}`}
+                              style={{ height: `${height}%` }}
+                            />
+                          </div>
+
+                          {/* Time label */}
+                          <div className="h-6 flex items-start pt-1">
+                            <span className={`text-[11px] whitespace-nowrap ${showTimeLabel ? 'text-zinc-500 font-medium' : 'text-transparent'}`}>
+                              {showTimeLabel ? (isLast ? '00:00' : formatHour(p.DateTime)) : '·'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Cheapest hour bracket */}
+                    {cheapest && upcoming.length > 0 && (() => {
+                      const left = cheapest.startIndex * barStep;
+                      const width = 4 * barW + 3 * gap;
+                      return (
+                        <div
+                          className="absolute flex flex-col items-center"
+                          style={{
+                            left: `${left}px`,
+                            width: `${width}px`,
+                            bottom: '24px',
+                          }}
+                        >
+                          <div className="w-full flex items-center">
+                            <div className="h-2 w-0.5 bg-green-400" />
+                            <div className="flex-1 border-b-2 border-green-400" />
+                            <div className="h-2 w-0.5 bg-green-400" />
+                          </div>
+                          <span className="text-[10px] font-semibold text-green-400 mt-0.5 whitespace-nowrap bg-zinc-900 px-1 rounded">
+                            HALVIN
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="text-right mt-2">
+              <span className="text-[10px] text-zinc-600">spot-hinta.fi</span>
             </div>
           </div>
-          <div className="text-right mt-2">
-            <span className="text-[10px] text-zinc-600">spot-hinta.fi</span>
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
