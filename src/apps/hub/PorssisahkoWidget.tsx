@@ -31,6 +31,36 @@ function getUpcomingPrices(prices: SpotPrice[], count: number): SpotPrice[] {
     .slice(0, count);
 }
 
+interface CheapestSlot {
+  startIndex: number;
+  avgCents: number;
+  startTime: string;
+  endTime: string;
+}
+
+function findCheapestHourSlot(upcoming: SpotPrice[]): CheapestSlot | null {
+  if (upcoming.length < 4) return null;
+  let bestAvg = Infinity;
+  let bestIdx = 0;
+  for (let i = 0; i <= upcoming.length - 4; i++) {
+    const avg =
+      (upcoming[i].PriceWithTax +
+        upcoming[i + 1].PriceWithTax +
+        upcoming[i + 2].PriceWithTax +
+        upcoming[i + 3].PriceWithTax) /
+      4;
+    if (avg < bestAvg) {
+      bestAvg = avg;
+      bestIdx = i;
+    }
+  }
+  const start = upcoming[bestIdx].DateTime;
+  const end = new Date(
+    new Date(upcoming[bestIdx + 3].DateTime).getTime() + 15 * 60 * 1000
+  ).toISOString();
+  return { startIndex: bestIdx, avgCents: toCents(bestAvg), startTime: start, endTime: end };
+}
+
 function formatHour(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString('fi-FI', {
     hour: '2-digit',
@@ -87,6 +117,7 @@ export default function PorssisahkoWidget() {
     : 1;
 
   const currentCents = current ? toCents(current.PriceWithTax) : 0;
+  const cheapest = upcoming.length >= 4 ? findCheapestHourSlot(upcoming) : null;
 
   return (
     <div className="hub-widget animate-fade-in">
@@ -132,6 +163,26 @@ export default function PorssisahkoWidget() {
         </div>
       )}
 
+      {cheapest && (
+        <div className="mb-6 p-4 rounded-xl bg-green-950/30 border border-green-900/40">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-green-400 text-sm">&#9660;</span>
+            <span className="text-xs uppercase tracking-widest text-green-400/70">
+              Halvin tunti
+            </span>
+          </div>
+          <div className="flex items-baseline gap-3">
+            <span className={`text-2xl font-bold ${priceColor(cheapest.avgCents)}`}>
+              {cheapest.avgCents.toFixed(2)}
+            </span>
+            <span className="text-xs text-zinc-500">snt/kWh (ka.)</span>
+          </div>
+          <div className="text-sm text-zinc-400 mt-1">
+            {formatHour(cheapest.startTime)} – {formatHour(cheapest.endTime)}
+          </div>
+        </div>
+      )}
+
       {!current && !loading && !error && (
         <div className="text-center mb-8 text-zinc-500">
           No current price available
@@ -153,13 +204,21 @@ export default function PorssisahkoWidget() {
             {upcoming.map((p, i) => {
               const cents = toCents(p.PriceWithTax);
               const height = Math.max((cents / maxCents) * 100, 4);
+              const isCheapest =
+                cheapest != null &&
+                i >= cheapest.startIndex &&
+                i < cheapest.startIndex + 4;
               return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
                   <span className="text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
                     {cents.toFixed(1)}
                   </span>
                   <div
-                    className={`w-full rounded-sm ${priceBarColor(cents)} transition-all group-hover:opacity-80`}
+                    className={`w-full rounded-sm transition-all group-hover:opacity-80 ${
+                      isCheapest
+                        ? 'bg-green-400 ring-1 ring-green-400/50'
+                        : priceBarColor(cents)
+                    }`}
                     style={{ height: `${height}%` }}
                   />
                   <span className="text-[10px] text-zinc-600">
