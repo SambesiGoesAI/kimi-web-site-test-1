@@ -1,29 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
 
-interface PriceEntry {
-  price: number;
-  startDate: string;
-  endDate: string;
+interface SpotPrice {
+  Rank: number;
+  DateTime: string;
+  PriceNoTax: number;
+  PriceWithTax: number;
 }
 
-interface PriceData {
-  prices: PriceEntry[];
+/** Convert EUR/kWh to cents/kWh */
+function toCents(eur: number): number {
+  return eur * 100;
 }
 
-function getCurrentPrice(prices: PriceEntry[]): PriceEntry | null {
+function getCurrentPrice(prices: SpotPrice[]): SpotPrice | null {
   const now = new Date();
-  return prices.find((p) => {
-    const start = new Date(p.startDate);
-    const end = new Date(p.endDate);
-    return now >= start && now < end;
-  }) ?? null;
+  // Prices are in 15-min intervals. Find the interval that contains "now".
+  for (const p of prices) {
+    const start = new Date(p.DateTime);
+    const end = new Date(start.getTime() + 15 * 60 * 1000);
+    if (now >= start && now < end) return p;
+  }
+  return null;
 }
 
-function getUpcomingPrices(prices: PriceEntry[], count: number): PriceEntry[] {
+function getUpcomingPrices(prices: SpotPrice[], count: number): SpotPrice[] {
   const now = new Date();
   return prices
-    .filter((p) => new Date(p.startDate) >= now)
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+    .filter((p) => new Date(p.DateTime) >= now)
+    .sort((a, b) => new Date(a.DateTime).getTime() - new Date(b.DateTime).getTime())
     .slice(0, count);
 }
 
@@ -34,24 +38,24 @@ function formatHour(dateStr: string): string {
   });
 }
 
-function priceColor(price: number): string {
-  if (price <= 0) return 'text-green-400';
-  if (price < 5) return 'text-green-300';
-  if (price < 10) return 'text-yellow-300';
-  if (price < 15) return 'text-orange-400';
+function priceColor(cents: number): string {
+  if (cents <= 0) return 'text-green-400';
+  if (cents < 5) return 'text-green-300';
+  if (cents < 10) return 'text-yellow-300';
+  if (cents < 15) return 'text-orange-400';
   return 'text-red-400';
 }
 
-function priceBarColor(price: number): string {
-  if (price <= 0) return 'bg-green-400';
-  if (price < 5) return 'bg-green-300';
-  if (price < 10) return 'bg-yellow-300';
-  if (price < 15) return 'bg-orange-400';
+function priceBarColor(cents: number): string {
+  if (cents <= 0) return 'bg-green-400';
+  if (cents < 5) return 'bg-green-300';
+  if (cents < 10) return 'bg-yellow-300';
+  if (cents < 15) return 'bg-orange-400';
   return 'bg-red-400';
 }
 
 export default function PorssisahkoWidget() {
-  const [data, setData] = useState<PriceData | null>(null);
+  const [prices, setPrices] = useState<SpotPrice[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
@@ -60,10 +64,10 @@ export default function PorssisahkoWidget() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('https://api.porssisahko.net/v1/latest-prices.json');
+      const res = await fetch('https://api.spot-hinta.fi/TodayAndDayForward');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json: PriceData = await res.json();
-      setData(json);
+      const json: SpotPrice[] = await res.json();
+      setPrices(json);
       setLastFetched(new Date());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to fetch prices');
@@ -76,16 +80,20 @@ export default function PorssisahkoWidget() {
     fetchPrices();
   }, [fetchPrices]);
 
-  const current = data ? getCurrentPrice(data.prices) : null;
-  const upcoming = data ? getUpcomingPrices(data.prices, 12) : [];
-  const maxPrice = upcoming.length > 0 ? Math.max(...upcoming.map((p) => Math.max(p.price, 1))) : 1;
+  const current = prices.length > 0 ? getCurrentPrice(prices) : null;
+  const upcoming = prices.length > 0 ? getUpcomingPrices(prices, 24) : [];
+  const maxCents = upcoming.length > 0
+    ? Math.max(...upcoming.map((p) => Math.max(toCents(p.PriceWithTax), 1)))
+    : 1;
+
+  const currentCents = current ? toCents(current.PriceWithTax) : 0;
 
   return (
     <div className="hub-widget animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <span className="text-2xl">&#9889;</span>
-          <h2 className="text-lg font-semibold text-white">Porssisahko</h2>
+          <h2 className="text-lg font-semibold text-white">Pörssisähkö</h2>
         </div>
         <div className="flex items-center gap-3">
           {lastFetched && (
@@ -112,14 +120,14 @@ export default function PorssisahkoWidget() {
       {current && (
         <div className="text-center mb-8">
           <div className="text-xs uppercase tracking-widest text-zinc-500 mb-2">
-            Current price
+            Hinta nyt
           </div>
-          <div className={`text-6xl font-bold tracking-tight ${priceColor(current.price)}`}>
-            {current.price.toFixed(2)}
+          <div className={`text-6xl font-bold tracking-tight ${priceColor(currentCents)}`}>
+            {currentCents.toFixed(2)}
           </div>
-          <div className="text-sm text-zinc-500 mt-1">snt/kWh</div>
+          <div className="text-sm text-zinc-500 mt-1">snt/kWh (sis. ALV)</div>
           <div className="text-xs text-zinc-600 mt-2">
-            {formatHour(current.startDate)} – {formatHour(current.endDate)}
+            {formatHour(current.DateTime)} – {formatHour(new Date(new Date(current.DateTime).getTime() + 15 * 60 * 1000).toISOString())}
           </div>
         </div>
       )}
@@ -130,7 +138,7 @@ export default function PorssisahkoWidget() {
         </div>
       )}
 
-      {loading && !data && (
+      {loading && prices.length === 0 && (
         <div className="text-center mb-8">
           <div className="text-zinc-500 animate-pulse">Loading prices...</div>
         </div>
@@ -139,26 +147,30 @@ export default function PorssisahkoWidget() {
       {upcoming.length > 0 && (
         <div>
           <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
-            Upcoming hours
+            Tulevat tunnit
           </div>
-          <div className="flex items-end gap-1 h-32">
+          <div className="flex items-end gap-[2px] h-32">
             {upcoming.map((p, i) => {
-              const height = Math.max((p.price / maxPrice) * 100, 4);
+              const cents = toCents(p.PriceWithTax);
+              const height = Math.max((cents / maxCents) * 100, 4);
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
                   <span className="text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {p.price.toFixed(1)}
+                    {cents.toFixed(1)}
                   </span>
                   <div
-                    className={`w-full rounded-sm ${priceBarColor(p.price)} transition-all group-hover:opacity-80`}
+                    className={`w-full rounded-sm ${priceBarColor(cents)} transition-all group-hover:opacity-80`}
                     style={{ height: `${height}%` }}
                   />
                   <span className="text-[10px] text-zinc-600">
-                    {formatHour(p.startDate)}
+                    {i % 4 === 0 ? formatHour(p.DateTime) : ''}
                   </span>
                 </div>
               );
             })}
+          </div>
+          <div className="text-right mt-2">
+            <span className="text-[10px] text-zinc-600">spot-hinta.fi</span>
           </div>
         </div>
       )}
