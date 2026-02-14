@@ -145,9 +145,12 @@ export default function PorssisahkoWidget() {
 
   const current = prices.length > 0 ? getCurrentPrice(prices) : null;
   const upcoming = prices.length > 0 ? getUpcomingPricesUntilMidnight(prices) : [];
-  const maxCents = upcoming.length > 0
-    ? Math.max(...upcoming.map((p) => Math.max(toCents(p.PriceWithTax), 1)))
-    : 1;
+
+  // Calculate min and max for relative scaling
+  const allCents = upcoming.map((p) => toCents(p.PriceWithTax));
+  const minCents = upcoming.length > 0 ? Math.min(...allCents) : 0;
+  const maxCents = upcoming.length > 0 ? Math.max(...allCents) : 1;
+  const centRange = maxCents - minCents;
 
   const currentCents = current ? toCents(current.PriceWithTax) : 0;
   const cheapest = upcoming.length >= 4 ? findCheapestHourSlot(upcoming) : null;
@@ -297,7 +300,10 @@ export default function PorssisahkoWidget() {
             <div className="flex items-end gap-[2px] h-32">
               {upcoming.map((p, i) => {
                 const cents = toCents(p.PriceWithTax);
-                const height = Math.max((cents / maxCents) * 100, 4);
+                // Use relative scaling (min-to-max) so price differences are visible
+                const height = centRange > 0
+                  ? Math.max(((cents - minCents) / centRange) * 100, 4)
+                  : 50; // If all prices identical, show 50% height
                 const isCheapest =
                   cheapest != null &&
                   i >= cheapest.startIndex &&
