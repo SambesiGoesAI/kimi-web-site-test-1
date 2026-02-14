@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 interface SpotPrice {
   Rank: number;
@@ -76,6 +76,28 @@ function priceColor(cents: number): string {
   return 'text-red-400';
 }
 
+function useCountdown(targetTime: string | null): { label: string; isActive: boolean } {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return useMemo(() => {
+    if (!targetTime) return { label: '', isActive: false };
+    const start = new Date(targetTime).getTime();
+    const diff = start - now.getTime();
+    if (diff <= 0) return { label: 'NYT!', isActive: true };
+    const h = Math.floor(diff / 3_600_000);
+    const m = Math.floor((diff % 3_600_000) / 60_000);
+    const parts: string[] = [];
+    if (h > 0) parts.push(`${h}h`);
+    parts.push(`${m}min`);
+    return { label: `alkaa ${parts.join(' ')} kuluttua`, isActive: false };
+  }, [targetTime, now]);
+}
+
 function priceBarColor(cents: number): string {
   if (cents <= 0) return 'bg-green-400';
   if (cents < 5) return 'bg-green-300';
@@ -118,6 +140,24 @@ export default function PorssisahkoWidget() {
 
   const currentCents = current ? toCents(current.PriceWithTax) : 0;
   const cheapest = upcoming.length >= 4 ? findCheapestHourSlot(upcoming) : null;
+  const countdown = useCountdown(cheapest?.startTime ?? null);
+
+  // Mini timeline: position of cheapest hour within the upcoming range
+  const timeline = useMemo(() => {
+    if (!cheapest || upcoming.length === 0) return null;
+    const rangeStart = new Date(upcoming[0].DateTime).getTime();
+    const rangeEnd = new Date(upcoming[upcoming.length - 1].DateTime).getTime() + 15 * 60 * 1000;
+    const totalSpan = rangeEnd - rangeStart;
+    if (totalSpan <= 0) return null;
+    const slotStart = new Date(cheapest.startTime).getTime();
+    const slotEnd = new Date(cheapest.endTime).getTime();
+    return {
+      leftPct: ((slotStart - rangeStart) / totalSpan) * 100,
+      widthPct: ((slotEnd - slotStart) / totalSpan) * 100,
+      rangeStartLabel: formatHour(upcoming[0].DateTime),
+      rangeEndLabel: formatHour(new Date(rangeEnd).toISOString()),
+    };
+  }, [cheapest, upcoming]);
 
   return (
     <div className="hub-widget animate-fade-in">
@@ -165,11 +205,22 @@ export default function PorssisahkoWidget() {
 
       {cheapest && (
         <div className="mb-6 p-4 rounded-xl bg-green-950/30 border border-green-900/40">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-green-400 text-sm">&#9660;</span>
-            <span className="text-xs uppercase tracking-widest text-green-400/70">
-              Halvin tunti
-            </span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-green-400 text-sm">&#9660;</span>
+              <span className="text-xs uppercase tracking-widest text-green-400/70">
+                Halvin tunti
+              </span>
+            </div>
+            {countdown.isActive ? (
+              <span className="text-xs font-bold text-green-300 bg-green-400/20 px-2 py-0.5 rounded-full animate-pulse">
+                NYT!
+              </span>
+            ) : countdown.label ? (
+              <span className="text-xs text-zinc-400">
+                {countdown.label}
+              </span>
+            ) : null}
           </div>
           <div className="flex items-baseline gap-3">
             <span className={`text-2xl font-bold ${priceColor(cheapest.avgCents)}`}>
@@ -180,6 +231,22 @@ export default function PorssisahkoWidget() {
           <div className="text-sm text-zinc-400 mt-1">
             {formatHour(cheapest.startTime)} – {formatHour(cheapest.endTime)}
           </div>
+
+          {/* Mini timeline bar */}
+          {timeline && (
+            <div className="mt-3">
+              <div className="relative h-2 rounded-full bg-zinc-800 overflow-hidden">
+                <div
+                  className="absolute top-0 h-full rounded-full bg-green-400/60"
+                  style={{ left: `${timeline.leftPct}%`, width: `${Math.max(timeline.widthPct, 2)}%` }}
+                />
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[10px] text-zinc-600">{timeline.rangeStartLabel}</span>
+                <span className="text-[10px] text-zinc-600">{timeline.rangeEndLabel}</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -200,35 +267,57 @@ export default function PorssisahkoWidget() {
           <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
             Tulevat tunnit
           </div>
-          <div className="flex items-end gap-[2px] h-32">
-            {upcoming.map((p, i) => {
-              const cents = toCents(p.PriceWithTax);
-              const height = Math.max((cents / maxCents) * 100, 4);
-              const isCheapest =
-                cheapest != null &&
-                i >= cheapest.startIndex &&
-                i < cheapest.startIndex + 4;
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                  <span className="text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {cents.toFixed(1)}
-                  </span>
-                  <div
-                    className={`w-full rounded-sm transition-all group-hover:opacity-80 ${
-                      isCheapest
-                        ? 'bg-green-400 ring-1 ring-green-400/50'
-                        : priceBarColor(cents)
-                    }`}
-                    style={{ height: `${height}%` }}
-                  />
-                  <span className="text-[10px] text-zinc-600">
-                    {i % 4 === 0 ? formatHour(p.DateTime) : ''}
-                  </span>
+          <div className="relative">
+            <div className="flex items-end gap-[2px] h-32">
+              {upcoming.map((p, i) => {
+                const cents = toCents(p.PriceWithTax);
+                const height = Math.max((cents / maxCents) * 100, 4);
+                const isCheapest =
+                  cheapest != null &&
+                  i >= cheapest.startIndex &&
+                  i < cheapest.startIndex + 4;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
+                    <span className="text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {cents.toFixed(1)}
+                    </span>
+                    <div
+                      className={`w-full rounded-sm transition-all group-hover:opacity-80 ${
+                        isCheapest
+                          ? 'bg-green-400 ring-1 ring-green-400/50'
+                          : priceBarColor(cents)
+                      }`}
+                      style={{ height: `${height}%` }}
+                    />
+                    <span className="text-[10px] text-zinc-600">
+                      {i % 4 === 0 ? formatHour(p.DateTime) : ''}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Chart connector bracket under cheapest bars */}
+            {cheapest && upcoming.length > 0 && (
+              <div
+                className="absolute -bottom-5 flex flex-col items-center"
+                style={{
+                  left: `${(cheapest.startIndex / upcoming.length) * 100}%`,
+                  width: `${(4 / upcoming.length) * 100}%`,
+                }}
+              >
+                <div className="w-full flex items-center">
+                  <div className="h-[6px] w-px bg-green-400/60" />
+                  <div className="flex-1 border-b border-green-400/60" />
+                  <div className="h-[6px] w-px bg-green-400/60" />
                 </div>
-              );
-            })}
+                <span className="text-[9px] text-green-400/70 mt-0.5 whitespace-nowrap">
+                  halvin
+                </span>
+              </div>
+            )}
           </div>
-          <div className="text-right mt-2">
+          <div className="text-right mt-6">
             <span className="text-[10px] text-zinc-600">spot-hinta.fi</span>
           </div>
         </div>
