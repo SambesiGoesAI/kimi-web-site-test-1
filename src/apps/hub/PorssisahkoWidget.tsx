@@ -296,25 +296,24 @@ export default function PorssisahkoWidget() {
           <div className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
             Hinnat keskiyöhön
           </div>
-          <div className="relative">
-            <div className="flex gap-[2px] h-32">
+          <div className="overflow-x-auto">
+            <div className="relative inline-flex gap-[2px] pb-6">
               {upcoming.map((p, i) => {
                 const cents = toCents(p.PriceWithTax);
-                // Use relative scaling (min-to-max) so price differences are visible
                 const height = centRange > 0
                   ? Math.max(((cents - minCents) / centRange) * 100, 4)
-                  : 50; // If all prices identical, show 50% height
+                  : 50;
                 const isCheapest =
                   cheapest != null &&
                   i >= cheapest.startIndex &&
                   i < cheapest.startIndex + 4;
                 const isLast = i === upcoming.length - 1;
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center group relative">
-                    <span className="text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      {cents.toFixed(1)}
+                  <div key={i} className="w-2 flex flex-col items-center group relative">
+                    <span className="absolute -top-4 text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                      {cents.toFixed(2)}
                     </span>
-                    <div className="flex-1 w-full flex items-end">
+                    <div className="h-28 w-full flex items-end">
                       <div
                         className={`w-full rounded-sm transition-all group-hover:opacity-80 ${
                           isCheapest
@@ -324,35 +323,45 @@ export default function PorssisahkoWidget() {
                         style={{ height: `${height}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-zinc-600 shrink-0">
-                      {i % 4 === 0 ? formatHour(p.DateTime) : isLast ? '00:00' : ''}
-                    </span>
+                    <div className="h-4 flex items-center">
+                      <span className="text-[10px] text-zinc-600 whitespace-nowrap">
+                        {i % 4 === 0 ? formatHour(p.DateTime) : isLast ? '00:00' : ''}
+                      </span>
+                    </div>
                   </div>
                 );
               })}
-            </div>
 
-            {/* Chart connector bracket under cheapest bars */}
-            {cheapest && upcoming.length > 0 && (
-              <div
-                className="absolute -bottom-5 flex flex-col items-center"
-                style={{
-                  left: `${(cheapest.startIndex / upcoming.length) * 100}%`,
-                  width: `${(4 / upcoming.length) * 100}%`,
-                }}
-              >
-                <div className="w-full flex items-center">
-                  <div className="h-[6px] w-px bg-green-400/60" />
-                  <div className="flex-1 border-b border-green-400/60" />
-                  <div className="h-[6px] w-px bg-green-400/60" />
-                </div>
-                <span className="text-[9px] text-green-400/70 mt-0.5 whitespace-nowrap">
-                  halvin
-                </span>
-              </div>
-            )}
+              {/* Chart connector bracket under cheapest bars */}
+              {cheapest && upcoming.length > 0 && (() => {
+                const barW = 8; // w-2 = 8px
+                const gap = 2;  // gap-[2px]
+                const step = barW + gap;
+                const left = cheapest.startIndex * step;
+                const width = 4 * barW + 3 * gap;
+                return (
+                  <div
+                    className="absolute flex flex-col items-center"
+                    style={{
+                      left: `${left}px`,
+                      width: `${width}px`,
+                      bottom: 0,
+                    }}
+                  >
+                    <div className="w-full flex items-center">
+                      <div className="h-[6px] w-px bg-green-400/60" />
+                      <div className="flex-1 border-b border-green-400/60" />
+                      <div className="h-[6px] w-px bg-green-400/60" />
+                    </div>
+                    <span className="text-[9px] text-green-400/70 mt-0.5 whitespace-nowrap">
+                      halvin
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
-          <div className="text-right mt-6">
+          <div className="text-right mt-2">
             <span className="text-[10px] text-zinc-600">spot-hinta.fi</span>
           </div>
         </div>
