@@ -150,7 +150,6 @@ export default function PorssisahkoWidget() {
   const allCents = upcoming.map((p) => toCents(p.PriceWithTax));
   const minCents = upcoming.length > 0 ? Math.min(...allCents) : 0;
   const maxCents = upcoming.length > 0 ? Math.max(...allCents) : 1;
-  const centRange = maxCents - minCents;
 
   const currentCents = current ? toCents(current.PriceWithTax) : 0;
   const cheapest = upcoming.length >= 4 ? findCheapestHourSlot(upcoming) : null;
