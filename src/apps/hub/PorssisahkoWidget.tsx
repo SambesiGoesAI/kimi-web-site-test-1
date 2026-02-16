@@ -303,6 +303,7 @@ export default function PorssisahkoWidget() {
         const yAxisSteps = 4;
         const step = Math.ceil(maxCents / yAxisSteps / 5) * 5; // Round to nearest 5
         const gridLines = Array.from({ length: yAxisSteps + 1 }, (_, i) => i * step);
+        const yAxisMax = step * yAxisSteps; // Actual maximum value on Y-axis
 
         const barW = 14; // w-3.5 = 14px
         const gap = 2;
@@ -337,8 +338,8 @@ export default function PorssisahkoWidget() {
                   <div className="relative inline-flex gap-[2px]">
                     {upcoming.map((p, i) => {
                       const cents = toCents(p.PriceWithTax);
-                      const height = centRange > 0
-                        ? Math.max(((cents - minCents) / centRange) * 100, 4)
+                      const height = yAxisMax > 0
+                        ? Math.max((cents / yAxisMax) * 100, 4)
                         : 50;
                       const isCheapest =
                         cheapest != null &&
