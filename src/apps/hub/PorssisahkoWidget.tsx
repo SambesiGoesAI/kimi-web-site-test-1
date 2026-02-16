@@ -146,10 +146,8 @@ export default function PorssisahkoWidget() {
   const current = prices.length > 0 ? getCurrentPrice(prices) : null;
   const upcoming = prices.length > 0 ? getUpcomingPricesUntilMidnight(prices) : [];
 
-  // Calculate min and max for relative scaling
-  const allCents = upcoming.map((p) => toCents(p.PriceWithTax));
-  const minCents = upcoming.length > 0 ? Math.min(...allCents) : 0;
-  const maxCents = upcoming.length > 0 ? Math.max(...allCents) : 1;
+  // Calculate max for relative scaling
+  const maxCents = upcoming.length > 0 ? Math.max(...upcoming.map((p) => toCents(p.PriceWithTax))) : 1;
 
   const currentCents = current ? toCents(current.PriceWithTax) : 0;
   const cheapest = upcoming.length >= 4 ? findCheapestHourSlot(upcoming) : null;
